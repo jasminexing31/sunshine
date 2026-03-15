@@ -57,10 +57,7 @@ interface ScheduleClientProps {
   assignments: Assignment[];
   dayRosters: DayRoster[];
   weekSchedule: WeekSchedule | null;
-  lessons: (Lesson & {
-    requestedInstructor?: Instructor | null;
-    assignment?: (Assignment & { instructor: Instructor }) | null;
-  })[];
+  lessons: Lesson[];
 }
 
 export default function ScheduleClient({

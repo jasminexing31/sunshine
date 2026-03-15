@@ -34,7 +34,7 @@ interface Assignment {
   status: string;
   warningMsg?: string | null;
   lesson: Lesson;
-  instructor: Instructor | null;
+  instructor: Instructor;
 }
 
 interface DayRoster {
@@ -122,8 +122,14 @@ export default function ScheduleClient({
     router.refresh();
   };
 
-  // Build conflict panel items
-  const conflictItems = assignments
+  // Build conflict panel items (instructor is null for unassigned lessons)
+  const conflictItems: Array<{
+    lessonId: number;
+    status: string;
+    warningMsg?: string | null;
+    lesson: Lesson;
+    instructor: Instructor | null;
+  }> = assignments
     .filter((a) => a.status !== 'assigned')
     .map((a) => ({
       lessonId: a.lessonId,

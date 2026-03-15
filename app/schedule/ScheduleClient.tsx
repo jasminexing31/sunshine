@@ -34,7 +34,7 @@ interface Assignment {
   status: string;
   warningMsg?: string | null;
   lesson: Lesson;
-  instructor: Instructor;
+  instructor: Instructor | null;
 }
 
 interface DayRoster {

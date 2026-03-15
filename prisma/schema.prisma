@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Instructor {
+  id                Int          @id @default(autoincrement())
+  name              String
+  certificationLevel Int
+  email             String?
+  phone             String?
+  isActive          Boolean      @default(true)
+  daysOff           DayOff[]
+  assignments       Assignment[]
+  dayRosters        DayRoster[]
+  requestedLessons  Lesson[]     @relation("RequestedInstructor")
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model DayOff {
+  id           Int        @id @default(autoincrement())
+  instructorId Int
+  date         DateTime
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+}
+
+model Lesson {
+  id                    Int         @id @default(autoincrement())
+  date                  DateTime
+  discipline            String
+  program               String
+  format                String
+  skillLevel            String?
+  startTime             String?
+  requestedInstructorId Int?
+  requestedInstructor   Instructor? @relation("RequestedInstructor", fields: [requestedInstructorId], references: [id])
+  assignment            Assignment?
+  weekStartDate         DateTime
+  createdAt             DateTime    @default(now())
+}
+
+model Assignment {
+  id           Int        @id @default(autoincrement())
+  lessonId     Int        @unique
+  instructorId Int
+  status       String
+  warningMsg   String?
+  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model DayRoster {
+  id           Int        @id @default(autoincrement())
+  date         DateTime
+  instructorId Int
+  status       String
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+
+  @@unique([date, instructorId])
+}
+
+model WeekSchedule {
+  id            Int       @id @default(autoincrement())
+  weekStartDate DateTime  @unique
+  status        String    @default("draft")
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

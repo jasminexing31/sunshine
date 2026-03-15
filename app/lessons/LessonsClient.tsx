@@ -55,7 +55,10 @@ export default function LessonsClient({ lessons, instructors, weekStart }: Lesso
   const [showAddForm, setShowAddForm] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const weekDays = getWeekDays(weekStart);
+  // weekStart arrives from the server as UTC midnight. Convert to local midnight
+  // so date-fns operations and formatting work correctly in the browser's timezone.
+  const weekStartLocal = new Date(weekStart.getUTCFullYear(), weekStart.getUTCMonth(), weekStart.getUTCDate());
+  const weekDays = getWeekDays(weekStartLocal);
 
   const handleWeekChange = (newWeek: Date) => {
     router.push(`/lessons?week=${format(newWeek, 'yyyy-MM-dd')}`);
@@ -75,11 +78,13 @@ export default function LessonsClient({ lessons, instructors, weekStart }: Lesso
   const lessonsByDay = weekDays.map((day) => ({
     day,
     lessons: lessons.filter((l) => {
+      // l.date is stored as UTC midnight in the DB; compare its UTC components
+      // against the local components of day (which is local midnight).
       const d = new Date(l.date);
       return (
-        d.getFullYear() === day.getFullYear() &&
-        d.getMonth() === day.getMonth() &&
-        d.getDate() === day.getDate()
+        d.getUTCFullYear() === day.getFullYear() &&
+        d.getUTCMonth() === day.getMonth() &&
+        d.getUTCDate() === day.getDate()
       );
     }),
   }));
@@ -105,7 +110,7 @@ export default function LessonsClient({ lessons, instructors, weekStart }: Lesso
 
       {/* Week picker */}
       <div className="mb-6">
-        <WeekPicker weekStart={weekStart} onChange={handleWeekChange} />
+        <WeekPicker weekStart={weekStartLocal} onChange={handleWeekChange} />
       </div>
 
       {/* Lessons grid by day */}
@@ -229,7 +234,7 @@ export default function LessonsClient({ lessons, instructors, weekStart }: Lesso
       {/* Add lesson modal */}
       {showAddForm && (
         <LessonForm
-          weekStart={weekStart}
+          weekStart={weekStartLocal}
           weekDays={weekDays}
           instructors={instructors}
           onClose={() => setShowAddForm(false)}

@@ -46,11 +46,13 @@ interface ScheduleGridProps {
 }
 
 function isSameDay(a: Date | string, b: Date): boolean {
+  // a comes from the DB as UTC midnight; compare its UTC components
+  // against b's local components (b is local midnight from the client).
   const da = new Date(a);
   return (
-    da.getFullYear() === b.getFullYear() &&
-    da.getMonth() === b.getMonth() &&
-    da.getDate() === b.getDate()
+    da.getUTCFullYear() === b.getFullYear() &&
+    da.getUTCMonth() === b.getMonth() &&
+    da.getUTCDate() === b.getDate()
   );
 }
 

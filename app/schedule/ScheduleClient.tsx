@@ -79,6 +79,11 @@ export default function ScheduleClient({
   const [overrideTarget, setOverrideTarget] = useState<Assignment | null>(null);
   const [actionMsg, setActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // weekStart and weekDays arrive from the server as UTC midnight. Convert to local
+  // midnight so date-fns formatting and display work correctly in the browser's timezone.
+  const weekStartLocal = new Date(weekStart.getUTCFullYear(), weekStart.getUTCMonth(), weekStart.getUTCDate());
+  const weekDaysLocal = weekDays.map((d) => new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+
   const handleWeekChange = (newWeek: Date) => {
     router.push(`/schedule?week=${format(newWeek, 'yyyy-MM-dd')}`);
   };
@@ -87,7 +92,7 @@ export default function ScheduleClient({
     setGenerating(true);
     setActionMsg(null);
     try {
-      await generateWeekSchedule(format(weekStart, 'yyyy-MM-dd'));
+      await generateWeekSchedule(format(weekStartLocal, 'yyyy-MM-dd'));
       setActionMsg({ type: 'success', text: 'Schedule generated successfully!' });
       router.refresh();
     } catch (err) {
@@ -102,7 +107,7 @@ export default function ScheduleClient({
     setPublishing(true);
     setActionMsg(null);
     try {
-      await publishWeekSchedule(format(weekStart, 'yyyy-MM-dd'));
+      await publishWeekSchedule(format(weekStartLocal, 'yyyy-MM-dd'));
       setActionMsg({ type: 'success', text: 'Schedule published!' });
       router.refresh();
     } catch (err) {
@@ -198,7 +203,7 @@ export default function ScheduleClient({
 
       {/* Week picker */}
       <div className="mb-6 flex items-center justify-between">
-        <WeekPicker weekStart={weekStart} onChange={handleWeekChange} />
+        <WeekPicker weekStart={weekStartLocal} onChange={handleWeekChange} />
 
         {/* Status summary */}
         {hasSchedule && (
@@ -281,7 +286,7 @@ export default function ScheduleClient({
 
         <ScheduleGrid
           instructors={instructors}
-          weekDays={weekDays}
+          weekDays={weekDaysLocal}
           assignments={assignments}
           dayRosters={dayRosters}
           onOverride={!isPublished ? (a, _day) => setOverrideTarget(a) : undefined}

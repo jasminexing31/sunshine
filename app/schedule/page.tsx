@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { startOfWeek } from 'date-fns';
+import { format, startOfWeek } from 'date-fns';
 import ScheduleClient from './ScheduleClient';
 
 export const dynamic = 'force-dynamic';
@@ -10,9 +10,11 @@ export default async function SchedulePage({
   searchParams: { week?: string };
 }) {
   const weekStartParam = searchParams.week;
+  // new Date("yyyy-MM-dd") parses as UTC midnight, matching how dates are stored in the DB.
+  // startOfWeek() returns local midnight, so normalize it via format() to get the correct UTC midnight.
   const weekStart = weekStartParam
     ? new Date(weekStartParam)
-    : startOfWeek(new Date(), { weekStartsOn: 1 });
+    : new Date(format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd'));
 
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 7);
